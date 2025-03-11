@@ -1,8 +1,12 @@
-const express = require("express");
-const { getHealthEducationContent } = require("../controllers/dashboardController");
-//const authMiddleware = require("../middlewares/authMiddleware");
-
+const express = require('express');
 const router = express.Router();
-router.get("/", authMiddleware, getHealthEducationContent);
+const { getDashboardContent } = require('../controllers/dashboardController');
+const { authenticate } = require('../middlewares/authMiddlewareNew');
+
+// Apply auth middleware
+router.use(authenticate);
+
+// Get dashboard content
+router.get('/', getDashboardContent);
 
 module.exports = router;
