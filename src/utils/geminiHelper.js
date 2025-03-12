@@ -18,9 +18,7 @@ const analyzeSymptoms = async (symptoms) => {
     
     Please provide: 
     1. Possible condition(s)
-    2. Recommended actions
-    3. Home care advice if applicable
-    4. When to seek professional medical help`;
+    2. Recommended actions`;
     
     // Generate content
     const result = await model.generateContent(prompt);
@@ -31,15 +29,22 @@ const analyzeSymptoms = async (symptoms) => {
     return {
       condition: extractCondition(text),
       recommendation: extractRecommendation(text),
-      homeCare: extractHomeCare(text),
-      seekHelp: extractWhenToSeekHelp(text),
-      fullResponse: text
     };
   } catch (error) {
     console.error('Error analyzing symptoms:', error);
     throw new Error('Failed to analyze symptoms');
   }
 };
+function extractCondition(text) {
+    // Simple extraction logic - in a real app, you'd want more sophisticated parsing
+    const conditionMatch = text.match(/Possible condition(?:\(s\))?:?(.*?)(?:Recommend|$)/is);
+    return conditionMatch ? conditionMatch[1].trim() : "Unable to determine condition";
+  }
+  
+  function extractRecommendation(text) {
+    const recommendMatch = text.match(/Recommend(?:ed|ation)(?:\s+actions)?:?(.*?)(?:Home care|$)/is);
+    return recommendMatch ? recommendMatch[1].trim() : "Consult a healthcare professional";
+  }
 
 module.exports = {
   analyzeSymptoms,
