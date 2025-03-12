@@ -1,11 +1,11 @@
 const { analyzeSymptoms } = require('../utils/geminiHelper');
-const User = require('../models/user');
+const User = require('../models/userModel');
 
 /**
  * Analyze symptoms using Google Gemini API
  * @route POST /api/symptoms/analyze
  */
-const analyzeSymptoms = async (req, res) => {
+const analyzeUserSymptoms = async (req, res) => {
   try {
     const { symptoms } = req.body;
     
@@ -32,4 +32,4 @@ const analyzeSymptoms = async (req, res) => {
   }
 };
 
-module.exports = { analyzeSymptoms };
+module.exports = { analyzeUserSymptoms };
