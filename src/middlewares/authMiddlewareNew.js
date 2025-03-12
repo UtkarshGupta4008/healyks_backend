@@ -58,31 +58,31 @@ const authenticate = async (req, res, next) => {
         return res.status(401).json({
           success: false,
           message: 'Token expired',
-          code: 'TOKEN_EXPIRED'
+          //code: 'TOKEN_EXPIRED'
         });
       } else if (error.code === 'auth/id-token-revoked') {
         return res.status(401).json({
           success: false,
           message: 'Token revoked',
-          code: 'TOKEN_REVOKED'
+          //code: 'TOKEN_REVOKED'
         });
       } else if (error.code === 'auth/invalid-id-token') {
         return res.status(401).json({
           success: false,
           message: 'Invalid token',
-          code: 'INVALID_TOKEN'
+          //code: 'INVALID_TOKEN'
         });
       } else if (error.code === 'auth/user-disabled') {
         return res.status(403).json({
           success: false,
           message: 'User account disabled',
-          code: 'USER_DISABLED'
+          //code: 'USER_DISABLED'
         });
       } else {
         return res.status(401).json({
           success: false,
           message: 'Authentication failed',
-          code: 'AUTH_FAILED'
+          //code: 'AUTH_FAILED'
         });
       }
     }

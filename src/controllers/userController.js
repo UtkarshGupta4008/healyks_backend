@@ -49,12 +49,14 @@ const postUserBody = async (req, res) => {
     await user.save();
     
     res.status(200).json({ 
-      message: 'User body screen data saved successfully' 
+      message: 'User body screen data saved successfully',
+      sucess: 'True'
     });
   } catch (error) {
     console.error('Error saving user body data:', error);
     res.status(500).json({ 
       message: 'Failed to save user data',
+      success: 'false',
       error: error.message 
     });
   }
