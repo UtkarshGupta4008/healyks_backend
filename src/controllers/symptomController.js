@@ -1,5 +1,5 @@
 const { analyzeSymptoms } = require('../utils/geminiHelper');
-const User = require('../models/userModel');
+const User = require('../models/user');
 
 /**
  * Analyze symptoms using Google Gemini API
