@@ -13,12 +13,15 @@ const analyzeSymptoms = async (symptoms) => {
     // Get the generative model
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-pro-exp-02-05" });
     
-    // Construct a simple prompt without user context
+    // Construct a prompt that encourages concise responses
     const prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}"
     
-    Please provide: 
-    1. Possible condition(s)
-    2. Recommended actions`;
+    Please provide very concise responses in the following format:
+    
+    Possible condition(s): [brief, 1-2 sentence description of the most likely condition]
+    Recommended actions: [brief, 1-2 sentence practical advice]
+    
+    Keep each response section to no more than 50 words.`;
     
     // Generate content
     const result = await model.generateContent(prompt);
@@ -35,16 +38,60 @@ const analyzeSymptoms = async (symptoms) => {
     throw new Error('Failed to analyze symptoms');
   }
 };
+
+/**
+ * Extract condition information from the AI response
+ * @param {string} text - Full AI response text
+ * @returns {string} - Extracted condition information
+ */
 function extractCondition(text) {
-    // Simple extraction logic - in a real app, you'd want more sophisticated parsing
-    const conditionMatch = text.match(/Possible condition(?:\(s\))?:?(.*?)(?:Recommend|$)/is);
-    return conditionMatch ? conditionMatch[1].trim() : "Unable to determine condition";
+  // First try to match the explicit format
+  const explicitMatch = text.match(/Possible condition(?:\(s\))?:?\s*(.*?)(?:\n|$)/i);
+  if (explicitMatch && explicitMatch[1].trim()) {
+    return explicitMatch[1].trim();
   }
   
-  function extractRecommendation(text) {
-    const recommendMatch = text.match(/Recommend(?:ed|ation)(?:\s+actions)?:?(.*?)(?:Home care|$)/is);
-    return recommendMatch ? recommendMatch[1].trim() : "Consult a healthcare professional";
+  // If no explicit match, try to find the first paragraph that might contain condition info
+  const paragraphs = text.split('\n').filter(p => p.trim());
+  for (const paragraph of paragraphs) {
+    if (paragraph.toLowerCase().includes('condition') || 
+        paragraph.toLowerCase().includes('may be') || 
+        paragraph.toLowerCase().includes('could be') ||
+        paragraph.toLowerCase().includes('likely')) {
+      return paragraph.trim();
+    }
   }
+  
+  // Fallback
+  return "Unable to determine condition";
+}
+
+/**
+ * Extract recommendation information from the AI response
+ * @param {string} text - Full AI response text
+ * @returns {string} - Extracted recommendation information
+ */
+function extractRecommendation(text) {
+  // First try to match the explicit format
+  const explicitMatch = text.match(/Recommend(?:ed|ation)(?:\s+actions)?:?\s*(.*?)(?:\n|$)/i);
+  if (explicitMatch && explicitMatch[1].trim()) {
+    return explicitMatch[1].trim();
+  }
+  
+  // Try to find any paragraph that talks about recommendations
+  const paragraphs = text.split('\n').filter(p => p.trim());
+  for (const paragraph of paragraphs) {
+    if (paragraph.toLowerCase().includes('recommend') || 
+        paragraph.toLowerCase().includes('should') || 
+        paragraph.toLowerCase().includes('advised') ||
+        paragraph.toLowerCase().includes('consider')) {
+      return paragraph.trim();
+    }
+  }
+  
+  // Fallback
+  return "Consult a healthcare professional";
+}
 
 module.exports = {
   analyzeSymptoms,
