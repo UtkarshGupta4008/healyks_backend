@@ -11,6 +11,7 @@ const analyzeUserSymptoms = async (req, res) => {
     
     if (!symptoms) {
       return res.status(400).json({ 
+        success: false,
         message: 'Symptoms are required'
       });
     }
@@ -27,7 +28,7 @@ const analyzeUserSymptoms = async (req, res) => {
     console.error('Error analyzing symptoms:', error);
     res.status(500).json({ 
       message: 'Failed to analyze symptoms',
-      error: error.message 
+      success: "false" 
     });
   }
 };

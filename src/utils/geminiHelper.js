@@ -11,7 +11,7 @@ const genAI = new GoogleGenerativeAI(process.env.Gemini_API_KEY);
 const analyzeSymptoms = async (symptoms) => {
   try {
     // Get the generative model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-pro-exp-02-05" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
     
     // Construct a prompt that encourages concise responses
     const prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}"
