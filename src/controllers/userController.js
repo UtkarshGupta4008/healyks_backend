@@ -75,14 +75,12 @@ const getUserDetails = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    else if(user){
-      return res.status(200).json({
-        success: true,
-        message: 'User details fetched',
-      });
-    }
+    return res.status(200).json({
+      success: true,
+      message: 'User details fetched successfully',
+      data: user, // Sending user data in the response
+    });
     
-    res.status(200).json(user);
   } catch (error) {
     console.error('Error fetching user details:', error);
     res.status(500).json({ 
