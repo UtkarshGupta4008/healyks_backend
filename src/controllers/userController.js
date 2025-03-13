@@ -50,7 +50,7 @@ const postUserBody = async (req, res) => {
     
     res.status(200).json({ 
       message: 'User body screen data saved successfully',
-      sucess: 'True'
+      success: 'True'
     });
   } catch (error) {
     console.error('Error saving user body data:', error);
@@ -69,25 +69,32 @@ const postUserBody = async (req, res) => {
 const getUserDetails = async (req, res) => {
   try {
     const uid = req.user.uid;
-    
-    const user = await User.findOne({ uid }).select('-__v -_id -uid');
-    
+
+    // Fetch user details without __v and _id
+    const user = await User.findOne({ uid }).select('-__v -_id');
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'User not found' 
+      });
     }
+
     return res.status(200).json({
       success: true,
       message: 'User details fetched successfully',
-      data: user, // Sending user data in the response
+      data: user, // Now including all user details
     });
-    
+
   } catch (error) {
     console.error('Error fetching user details:', error);
-    res.status(500).json({ 
-      message: 'Failed to fetch user details',
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error', 
       error: error.message 
     });
   }
 };
+
 
 module.exports = { postUserBody, getUserDetails };
