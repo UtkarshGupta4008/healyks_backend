@@ -57,7 +57,7 @@ const postUserBody = async (req, res) => {
     res.status(500).json({ 
       message: 'Failed to save user data',
       success: 'false',
-      error: error.message 
+      //error: error.message 
     });
   }
 };
@@ -74,6 +74,12 @@ const getUserDetails = async (req, res) => {
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+    else if(user){
+      return res.status(200).json({
+        success: true,
+        message: 'User details fetched',
+      });
     }
     
     res.status(200).json(user);

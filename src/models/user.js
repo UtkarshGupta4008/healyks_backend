@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema({
       enum: ['None', 'Occasional', 'Regular', 'Daily']
     }
   },
+  /*
   createdAt: {
     type: Date,
     default: Date.now
@@ -57,7 +58,7 @@ const userSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
-  }
+  }*/
 });
 
 // Update the updatedAt field before saving
