@@ -47,7 +47,8 @@ const userSchema = new mongoose.Schema({
     },
     physicalActivity: {
       type: String,
-      enum: ['Daily','Weakly','Monthly'],
+      enum: ['Daily','Weekly','Monthly'],
+      required: false,
       default: null
     }
   },
