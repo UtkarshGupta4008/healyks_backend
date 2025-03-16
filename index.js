@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 //Type: Middleware for handling Cross-Origin Resource Sharing.
-//Purpose: Allows frontend applications (React, Angular, Vue, etc.) hosted on a different domain to access your backend.
+//Purpose: Allows frontend applications hosted on a different domain to access the backend.
 const cors = require("cors");
 const connectDB = require("./src/config/db");
 

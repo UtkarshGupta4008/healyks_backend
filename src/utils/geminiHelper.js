@@ -8,15 +8,27 @@ const genAI = new GoogleGenerativeAI(process.env.Gemini_API_KEY);
  * @param {string} symptoms - User symptoms
  * @returns {Promise<object>} - Structured analysis of symptoms
  */
-const analyzeSymptoms = async (symptoms) => {
+const analyzeSymptoms = async (symptoms,userProfile) => {
   try {
     // Get the generative model
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
     
     // Construct a prompt that encourages concise responses
-    const prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}"
+    let prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}"`;
+    if (userProfile) {
+      prompt += `\nUser information: ${userProfile.age} years old, ${userProfile.gender}`;
+
+      if (userProfile.chronicDiseases && userProfile.chronicDiseases.length > 0) {
+        prompt += `\nChronic conditions: ${userProfile.chronicDiseases.join(', ')}`;
+      }
+
+      if (userProfile.allergies && userProfile.allergies.length > 0) {
+        prompt += `\nAllergies: ${userProfile.allergies.join(', ')}`;
+      }
+    }
+
     
-    Please provide very concise responses in the following format:
+    prompt+=`\nPlease provide very concise responses in the following format:
     
     Possible condition(s): [brief, 1-2 sentence description of the most likely condition]
     Recommended actions: [brief, 1-2 sentence practical advice]

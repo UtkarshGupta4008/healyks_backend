@@ -17,11 +17,11 @@ const analyzeUserSymptoms = async (req, res) => {
     }
     
     // Get user profile for context if available
-    //const uid = req.user.uid;
-    //const userProfile = await User.findOne({ uid }).lean();
+    const uid = req.user.uid;
+    const userProfile = await User.findOne({ uid }).lean();
     
     // Analyze symptoms with Gemini API
-    const analysis = await analyzeSymptoms(symptoms);
+    const analysis = await analyzeSymptoms(symptoms,userProfile);
     
     res.status(200).json(analysis);
   } catch (error) {
