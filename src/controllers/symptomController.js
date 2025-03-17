@@ -23,7 +23,11 @@ const analyzeUserSymptoms = async (req, res) => {
     // Analyze symptoms with Gemini API
     const analysis = await analyzeSymptoms(symptoms,userProfile);
     
-    res.status(200).json(analysis);
+    res.status(200).json({ 
+      success: true,
+      message: 'Symptom analysis successful',
+      data: analysis 
+    });
   } catch (error) {
     console.error('Error analyzing symptoms:', error);
     res.status(500).json({ 
