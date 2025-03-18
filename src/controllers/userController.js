@@ -94,7 +94,6 @@ const getUserDetails = async (req, res) => {
       data: user,
       isProfileComplete,
       missingFields,
-      profileCompletionMessage: isProfileComplete ? null : 'Please complete your health profile by adding'
     });
 
   } catch (error) {
