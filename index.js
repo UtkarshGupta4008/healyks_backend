@@ -5,31 +5,31 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./src/config/db");
 
-const app = express();
+const index = express();
 
 // Middleware
-app.use(express.json());
-app.use(cors());
+index.use(express.json());
+index.use(cors());
 
 // Connect Database
 connectDB();
 
 // Routes
-app.use("/api/user", require("./src/routes/userRoutes"));
-app.use("/api/auth", require("./src/routes/authRoutes"));
-app.use("/api/symptoms", require("./src/routes/symptomRoutes"));
-app.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
+index.use("/api/user", require("./src/routes/userRoutes"));
+index.use("/api/auth", require("./src/routes/authRoutes"));
+index.use("/api/symptoms", require("./src/routes/symptomRoutes"));
+index.use("/api/dashboard", require("./src/routes/dashboardRoutes"));
 
-app.get('/', (req, res) => {
+index.get('/', (req, res) => {
     res.send('Healyks API is running');
   });
   
-app.use((req, res) => {
+index.use((req, res) => {
     res.status(404).json({ message: 'Route not found' });
   });
-  app.use((err, req, res, next) => {
+  index.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong!' });
   });
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+index.listen(PORT, () => console.log(`Server running on port ${PORT}`));
