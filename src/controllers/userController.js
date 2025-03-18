@@ -87,13 +87,16 @@ const getUserDetails = async (req, res) => {
     if (!user.bloodGroup) missingFields.push('bloodGroup');
   
     const isProfileComplete = missingFields.length === 0;
+    const data = {
+      user,
+      isProfileComplete: isProfileComplete,
+    };
+    
 
     return res.status(200).json({
       success: true,
       message: 'User details fetched successfully',
-      data: user,
-      isProfileComplete,
-      missingFields,
+      data,
     });
 
   } catch (error) {
