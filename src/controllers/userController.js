@@ -79,24 +79,11 @@ const getUserDetails = async (req, res) => {
         message: 'User not found' 
       });
     }
-    const missingFields = [];
-    if (!user.age) missingFields.push('age');
-    if (!user.gender) missingFields.push('gender');
-    if (!user.weight) missingFields.push('weight');
-    if (!user.height) missingFields.push('height');
-    if (!user.bloodGroup) missingFields.push('bloodGroup');
-  
-    const isProfileComplete = missingFields.length === 0;
-    const data = {
-      user,
-      isProfileComplete: isProfileComplete,
-    };
-    
 
     return res.status(200).json({
       success: true,
       message: 'User details fetched successfully',
-      data,
+      data: user,
     });
 
   } catch (error) {
