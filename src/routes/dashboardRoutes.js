@@ -9,4 +9,6 @@ router.use(authenticate);
 // Get dashboard content
 router.get('/', getDashboardContent);
 
+router.get('/:id', getDashboardContentById);
+
 module.exports = router;
