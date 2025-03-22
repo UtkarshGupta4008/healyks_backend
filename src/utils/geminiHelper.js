@@ -57,26 +57,24 @@ function parseSections(text) {
     homeRemedies: "No home remedies mentioned."
   };
 
-  const lower = text.toLowerCase();
+  const raw = cleanMarkdown(text);
 
-  const conditionMatch = text.match(/(?:1\.|^|\n)[^\n]*condition[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n2\.|2\.\s+|^2\.|^2\s+|$)/i);
-  const recommendationMatch = text.match(/(?:2\.|^|\n)[^\n]*treatment[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n3\.|3\.\s+|^3\.|^3\s+|$)/i);
-  const homeRemediesMatch = text.match(/(?:3\.|^|\n)[^\n]*home remedies[^\n]*[\n\-–]*([\s\S]*?)(?=$)/i);
+  const regexMap = {
+    condition: /(1\.\s*|^)[^\n]*condition[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n2\.|2\.|^2|$)/i,
+    recommendation: /(2\.\s*|^)[^\n]*recommendation[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n3\.|3\.|^3|$)/i,
+    homeRemedies: /(3\.\s*|^)[^\n]*home remedies[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n4\.|$)/i
+  };
 
-  if (conditionMatch?.[1]) {
-    sections.condition = limitWords(cleanMarkdown(conditionMatch[1].trim()), 300);
-  }
-
-  if (recommendationMatch?.[1]) {
-    sections.recommendation = limitWords(cleanMarkdown(recommendationMatch[1].trim()), 300);
-  }
-
-  if (homeRemediesMatch?.[1]) {
-    sections.homeRemedies = limitWords(cleanMarkdown(homeRemediesMatch[1].trim()), 300);
+  for (const key in regexMap) {
+    const match = raw.match(regexMap[key]);
+    if (match?.[2]) {
+      sections[key] = limitWords(match[2].trim(), 300);
+    }
   }
 
   return sections;
 }
+
 
 
 function cleanMarkdown(str) {
