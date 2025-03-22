@@ -54,57 +54,35 @@ Use a clear, informative, and empathetic tone.`;
   }
 };
 function extractCondition(text) {
-  // Try to match a section starting with "Possible condition(s)" or similar
-  const match = text.match(/(?:Possible condition(?:s)?|Likely diagnosis|Medical explanation)[:\s]*([\s\S]+?)(?:\n\s*\n|Recommended|Advice|Home remedies|$)/i);
+  const match = text.match(/(?:\*\*1\.\s*Possible Medical Conditions.*?\*\*|Possible condition(?:s)?|Likely diagnosis|Medical explanation)[:\s]*([\s\S]+?)(?:\*\*2\.|Recommended|Doctor|Advice|$)/i);
   if (match && match[1]) {
     return match[1].trim();
-  }
-
-  // Fallback: first paragraph that seems diagnostic
-  const paragraphs = text.split('\n\n').map(p => p.trim()).filter(Boolean);
-  for (const p of paragraphs) {
-    if (p.toLowerCase().includes('likely') || p.toLowerCase().includes('may be') || p.toLowerCase().includes('condition')) {
-      return p;
-    }
   }
 
   return "Condition details not clearly identified.";
 }
 
 
+
 function extractRecommendation(text) {
-  // Try to match a section for medical advice or recommendations
-  const match = text.match(/(?:Recommended actions|Doctor's advice|Treatment recommendation|Clinical advice)[:\s]*([\s\S]+?)(?:\n\s*\n|Home remedies|Lifestyle tips|$)/i);
+  const match = text.match(/(?:\*\*2\.\s*Professional Recommendations.*?\*\*|Recommended actions|Doctor's advice|Treatment recommendation|Clinical advice)[:\s]*([\s\S]+?)(?:\*\*3\.|Home remedies|Lifestyle|Advice|$)/i);
   if (match && match[1]) {
     return match[1].trim();
-  }
-
-  // Fallback: paragraph that includes "should", "recommend", "advised", etc.
-  const paragraphs = text.split('\n\n').map(p => p.trim()).filter(Boolean);
-  for (const p of paragraphs) {
-    if (p.toLowerCase().includes('should') || p.toLowerCase().includes('recommend') || p.toLowerCase().includes('advised')) {
-      return p;
-    }
   }
 
   return "No specific recommendations found.";
 }
 
+
 function extractHomeRemedies(text) {
-  const match = text.match(/(?:Home remedies|Lifestyle tips|Natural treatments)[:\s]*([\s\S]+?)(?:\n\s*\n|Advice|Seek|$)/i);
+  const match = text.match(/(?:\*\*3\.\s*.*?Home Remedies.*?\*\*|Home remedies|Lifestyle tips|Natural treatments)[:\s]*([\s\S]+?)(?:\*\*4\.|Advice|Seek|$)/i);
   if (match && match[1]) {
     return match[1].trim();
   }
 
-  const paragraphs = text.split('\n\n').map(p => p.trim()).filter(Boolean);
-  for (const p of paragraphs) {
-    if (p.toLowerCase().includes('remedy') || p.toLowerCase().includes('at home') || p.toLowerCase().includes('natural')) {
-      return p;
-    }
-  }
-
   return "No home remedies mentioned.";
 }
+
 
 
 module.exports = {
