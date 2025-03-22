@@ -91,21 +91,6 @@ function limitWords(text, wordLimit) {
     ? words.slice(0, wordLimit).join(' ') + '...'
     : text;
 }
-
-// Example test function to help debug the parsing
-function testParser() {
-  const sampleResponse = `
-1. **Medical Condition(s)**: Based on the symptoms described, this could be a case of acute sinusitis. The facial pain, pressure, and nasal congestion are classic signs of inflamed sinuses.
-
-2. **Treatment Recommendations**: Over-the-counter decongestants may help relieve sinus pressure. Saline nasal sprays can moisturize nasal passages and reduce congestion.
-
-3. **Home Remedies & Lifestyle Tips**: Apply warm compresses to the face to help relieve pain and pressure. Stay hydrated and get plenty of rest.
-  `;
-  
-  console.log(parseSections(sampleResponse));
-}
-
 module.exports = {
   analyzeSymptoms,
-  testParser // Export for testing purposes
 };
