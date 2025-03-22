@@ -50,11 +50,6 @@ Be concise, medically accurate, and empathetic in tone. Avoid repetition.`;
   }
 };
 
-/**
- * Parse Gemini response into structured sections
- * @param {string} text - Full Gemini response
- * @returns {object}
- */
 function parseSections(text) {
   const sections = {
     condition: "Condition details not clearly identified.",
@@ -62,16 +57,18 @@ function parseSections(text) {
     homeRemedies: "No home remedies mentioned."
   };
 
-  // Flexible split for section headers like "1.", "1 -", etc.
-  const parts = text.split(/(?:\*\*|\n|\r)?\s*\d[.)-]?\s*/).map(p => p.trim());
+  // Split based on numbered headers or keywords like "Medical Condition(s)"
+  const parts = text.split(/(?:^|\n)(?=\s*\d[.)-]\s+|\*\*\s*Medical|Treatment|Home Remedies)/i);
 
   for (const part of parts) {
-    if (/condition|diagnosis|explanation|cause/i.test(part)) {
-      sections.condition = limitWords(cleanMarkdown(part), 300);
-    } else if (/recommendation|treatment|advice/i.test(part)) {
-      sections.recommendation = limitWords(cleanMarkdown(part), 300);
-    } else if (/home remedies|lifestyle|natural|self-care|relief/i.test(part)) {
-      sections.homeRemedies = limitWords(cleanMarkdown(part), 300);
+    const cleanPart = cleanMarkdown(part).trim();
+
+    if (/condition|diagnosis|cause|explanation/i.test(cleanPart)) {
+      sections.condition = limitWords(cleanPart, 300);
+    } else if (/treatment|recommendation|medication|advice/i.test(cleanPart)) {
+      sections.recommendation = limitWords(cleanPart, 300);
+    } else if (/home remedies|lifestyle|self-care|natural|relief/i.test(cleanPart)) {
+      sections.homeRemedies = limitWords(cleanPart, 300);
     }
   }
 
