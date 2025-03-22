@@ -33,7 +33,8 @@ const analyzeSymptoms = async (symptoms, userProfile) => {
 2. **Treatment Recommendations**: [Your treatment advice]
 3. **Home Remedies & Lifestyle Tips**: [Your home remedy suggestions]
 
-Be concise, medically accurate, and empathetic in tone.`;
+Be concise, medically accurate, and empathetic in tone.
+keep each section in not more than 100 words`;
     
     const result = await model.generateContent(prompt);
     const response = result.response;
