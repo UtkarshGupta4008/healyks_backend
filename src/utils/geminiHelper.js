@@ -53,72 +53,39 @@ Please respond as a medical professional would, with appropriate medical termino
   }
 };
 
-/**
- * Extract condition information from the AI response
- * @param {string} text - Full AI response text
- * @returns {string} - Extracted condition information
- */
 function extractCondition(text) {
-  // First try to match the explicit format
-  const pattern = /Possible condition(?:\(s\))?:?\s*([\s\S]*?)(?=\n\s*Recommended actions:|$)/i;
-  const match = text.match(pattern);
+  const explicitMatch = text.match(/Possible condition(?:\(s\))?:?\s*(\*\*)?(?:\s*\n+)?([\s\S]*?)(?=\n\s*Recommended actions:|$)/i);
   
-  if (match && match[1] && match[1].trim()) {
-    return match[1].trim();
+  if (explicitMatch && explicitMatch[2] && explicitMatch[2].trim()) {
+    return explicitMatch[2].trim();
   }
-  
-  // Second attempt with a more lenient pattern
-  const lenientPattern = /(?:Possible|Potential|Likely) condition[^:]*:\s*([\s\S]*?)(?=\n\s*Recommended|Home|$)/i;
-  const lenientMatch = text.match(lenientPattern);
-  
-  if (lenientMatch && lenientMatch[1] && lenientMatch[1].trim()) {
-    return lenientMatch[1].trim();
-  }
-  
-  // If still no match, extract the first paragraph that might be about conditions
-  const paragraphs = text.split('\n\n').filter(p => p.trim());
-  for (const paragraph of paragraphs) {
-    if (paragraph.toLowerCase().includes('condition') || 
-        paragraph.toLowerCase().includes('diagnosis') || 
-        paragraph.toLowerCase().includes('suffering from') || 
-        paragraph.toLowerCase().includes('symptoms suggest')) {
-      return paragraph.trim();
+  if (text.startsWith('**') && text.length > 2) {
+    const cleanText = text.replace(/^\*\*\s*\n+/, '');
+    const sections = cleanText.split(/\n\s*(?:Recommended actions:|Home remedies:)/i);
+    if (sections.length > 0) {
+      return sections[0].trim();
     }
+    
+    return cleanText;
   }
   
   // Fallback
   return "Unable to determine condition";
 }
-
-/**
- * Extract recommendation information from the AI response
- * @param {string} text - Full AI response text
- * @returns {string} - Extracted recommendation information
- */
 function extractRecommendation(text) {
-  const pattern = /Recommended actions:?\s*([\s\S]*?)(?=\n\s*Home remedies:|$)/i;
-  const match = text.match(pattern);
+  const explicitMatch = text.match(/Recommended actions:?\s*(\*\*)?(?:\s*\n+)?([\s\S]*?)(?=\n\s*Home remedies:|$)/i);
   
-  if (match && match[1] && match[1].trim()) {
-    return match[1].trim();
+  if (explicitMatch && explicitMatch[2] && explicitMatch[2].trim()) {
+    return explicitMatch[2].trim();
   }
-  
-  // Second attempt with a more lenient pattern
-  const lenientPattern = /(?:Recommend|Advice|What to do)[^:]*:\s*([\s\S]*?)(?=\n\s*Home|$)/i;
-  const lenientMatch = text.match(lenientPattern);
-  
-  if (lenientMatch && lenientMatch[1] && lenientMatch[1].trim()) {
-    return lenientMatch[1].trim();
-  }
-  
-  // If still no match, look for paragraphs that seem like recommendations
-  const paragraphs = text.split('\n\n').filter(p => p.trim());
-  for (const paragraph of paragraphs) {
-    if (paragraph.toLowerCase().includes('recommend') || 
-        paragraph.toLowerCase().includes('should see') || 
-        paragraph.toLowerCase().includes('advised to') ||
-        paragraph.toLowerCase().includes('seek medical')) {
-      return paragraph.trim();
+  if (text.includes('Recommended actions:')) {
+    const recommendationSection = text.split(/Recommended actions:/i)[1];
+    if (recommendationSection) {
+      const endOfRecommendation = recommendationSection.split(/Home remedies:/i)[0];
+      if (endOfRecommendation) {
+        // Remove any starting ** and clean up
+        return endOfRecommendation.replace(/^\*\*\s*\n+/, '').trim();
+      }
     }
   }
   
@@ -126,27 +93,18 @@ function extractRecommendation(text) {
   return "Consult a healthcare professional";
 }
 function extractHomeRemedies(text) {
-  const pattern = /Home remedies:?\s*([\s\S]*?)(?=\n\n\s*|$)/i;
-  const match = text.match(pattern);
+  const explicitMatch = text.match(/Home remedies:?\s*(\*\*)?(?:\s*\n+)?([\s\S]*?)(?=\n\n\s*|$)/i);
   
-  if (match && match[1] && match[1].trim()) {
-    return match[1].trim();
+  if (explicitMatch && explicitMatch[2] && explicitMatch[2].trim()) {
+    return explicitMatch[2].trim();
   }
   
-  // Second attempt with a more lenient pattern
-  const lenientPattern = /(?:Home|Natural|Self)[^:]*(?:remedies|care|treatment)[^:]*:?\s*([\s\S]*?)(?=\n\n|$)/i;
-  const lenientMatch = text.match(lenientPattern);
-  
-  if (lenientMatch && lenientMatch[1] && lenientMatch[1].trim()) {
-    return lenientMatch[1].trim();
-  }
-  
-  // If still no match, look for paragraphs that seem like home remedies
-  const paragraphs = text.split('\n\n').filter(p => p.trim());
-  for (const paragraph of paragraphs) {
-    if (paragraph.toLowerCase().includes('home') && 
-       (paragraph.toLowerCase().includes('remedy') || paragraph.toLowerCase().includes('treatment'))) {
-      return paragraph.trim();
+  // For the case where the whole text starts with **
+  if (text.includes('Home remedies:')) {
+    const remediesSection = text.split(/Home remedies:/i)[1];
+    if (remediesSection) {
+      // Remove any starting ** and clean up
+      return remediesSection.replace(/^\*\*\s*\n+/, '').trim();
     }
   }
   
