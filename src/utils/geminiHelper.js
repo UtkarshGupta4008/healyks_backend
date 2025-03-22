@@ -12,37 +12,33 @@ const genAI = new GoogleGenerativeAI(process.env.Gemini_API_KEY);
 const analyzeSymptoms = async (symptoms, userProfile) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
-
+    
     let prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}".`;
-
+    
     if (userProfile) {
       prompt += `\nUser information: ${userProfile.age} years old, ${userProfile.gender}.`;
-
+      
       if (userProfile.chronicDiseases?.length) {
         prompt += `\nChronic conditions: ${userProfile.chronicDiseases.join(', ')}.`;
       }
-
+      
       if (userProfile.allergies?.length) {
         prompt += `\nAllergies: ${userProfile.allergies.join(', ')}.`;
       }
     }
+    
+    prompt += `\n\nPlease provide your response in the following format:
+    
+1. **Medical Condition(s)**: [Your analysis of likely conditions]
+2. **Treatment Recommendations**: [Your treatment advice]
+3. **Home Remedies & Lifestyle Tips**: [Your home remedy suggestions]
 
-    prompt += `
-
-Please behave like a medical doctor in your response.
-
-Your response must include the following 3 sections and follow this format:
-
-1. **Medical Condition(s)** – A brief explanation (max 300 words) of the most likely cause(s) based on the symptoms.
-2. **Treatment Recommendations** – Professional advice (max 300 words) including both clinical and non-clinical options.
-3. **Home Remedies & Lifestyle Tips** – Safe remedies and tips (max 300 words) the user can try at home.
-
-Be concise, medically accurate, and empathetic in tone. Avoid repetition.`;
-
+Be concise, medically accurate, and empathetic in tone.`;
+    
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
-
+    
     return parseSections(text);
   } catch (error) {
     console.error('Error analyzing symptoms:', error);
@@ -56,26 +52,34 @@ function parseSections(text) {
     recommendation: "No specific recommendations found.",
     homeRemedies: "No home remedies mentioned."
   };
-
-  const raw = cleanMarkdown(text);
-
-  const regexMap = {
-    condition: /(1\.\s*|^)[^\n]*condition[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n2\.|2\.|^2|$)/i,
-    recommendation: /(2\.\s*|^)[^\n]*recommendation[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n3\.|3\.|^3|$)/i,
-    homeRemedies: /(3\.\s*|^)[^\n]*home remedies[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n4\.|$)/i
-  };
-
-  for (const key in regexMap) {
-    const match = raw.match(regexMap[key]);
-    if (match?.[2]) {
-      sections[key] = limitWords(match[2].trim(), 300);
+  
+  // Improved regex patterns that better match the actual response format
+  const conditionRegex = /(?:1\.?\s*(?:\*\*)?Medical Condition(?:\(s\))?(?:\*\*)?:?)|(?:Medical Condition(?:\(s\))?:?)/i;
+  const recommendationRegex = /(?:2\.?\s*(?:\*\*)?Treatment Recommendation(?:s)?(?:\*\*)?:?)|(?:Treatment Recommendation(?:s)?:?)/i;
+  const homeRemediesRegex = /(?:3\.?\s*(?:\*\*)?Home Remedies(?:\s*&\s*Lifestyle Tips)?(?:\*\*)?:?)|(?:Home Remedies(?:\s*&\s*Lifestyle Tips)?:?)/i;
+  
+  // Split the text into sections
+  const parts = text.split(/\n(?=\d\.|\*\*\d\.)/);
+  
+  // Process each part to find our sections
+  for (const part of parts) {
+    if (conditionRegex.test(part)) {
+      sections.condition = extractContent(part, conditionRegex);
+    } else if (recommendationRegex.test(part)) {
+      sections.recommendation = extractContent(part, recommendationRegex);
+    } else if (homeRemediesRegex.test(part)) {
+      sections.homeRemedies = extractContent(part, homeRemediesRegex);
     }
   }
-
+  
   return sections;
 }
 
-
+function extractContent(text, headerRegex) {
+  // Remove the header and clean up the content
+  const content = text.replace(headerRegex, '').trim();
+  return limitWords(cleanMarkdown(content), 300);
+}
 
 function cleanMarkdown(str) {
   return str.replace(/[*_`]+/g, '').trim();
@@ -88,6 +92,20 @@ function limitWords(text, wordLimit) {
     : text;
 }
 
+// Example test function to help debug the parsing
+function testParser() {
+  const sampleResponse = `
+1. **Medical Condition(s)**: Based on the symptoms described, this could be a case of acute sinusitis. The facial pain, pressure, and nasal congestion are classic signs of inflamed sinuses.
+
+2. **Treatment Recommendations**: Over-the-counter decongestants may help relieve sinus pressure. Saline nasal sprays can moisturize nasal passages and reduce congestion.
+
+3. **Home Remedies & Lifestyle Tips**: Apply warm compresses to the face to help relieve pain and pressure. Stay hydrated and get plenty of rest.
+  `;
+  
+  console.log(parseSections(sampleResponse));
+}
+
 module.exports = {
   analyzeSymptoms,
+  testParser // Export for testing purposes
 };
