@@ -16,7 +16,7 @@ const analyzeSymptoms = async (symptoms, userProfile) => {
     let prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}".`;
     
     if (userProfile) {
-      prompt += `\nUser information: ${userProfile.age} years old, ${userProfile.gender}.`;
+      prompt += `\nUser information: ${userProfile.age} years old, ${userProfile.gender}, ${userProfile.bloodgroup}, with height ${userProfile.height} cm, and weight ${userProfile.weight} kg.`;
       
       if (userProfile.chronicDiseases?.length) {
         prompt += `\nChronic conditions: ${userProfile.chronicDiseases.join(', ')}.`;
@@ -24,6 +24,9 @@ const analyzeSymptoms = async (symptoms, userProfile) => {
       
       if (userProfile.allergies?.length) {
         prompt += `\nAllergies: ${userProfile.allergies.join(', ')}.`;
+      }
+      if (userProfile.lifestyle?.length) {
+        prompt += `\nLife styles: ${userProfile.lifestyle.join(', ')}.`;
       }
     }
     
