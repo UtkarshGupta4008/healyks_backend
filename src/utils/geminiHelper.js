@@ -57,23 +57,27 @@ function parseSections(text) {
     homeRemedies: "No home remedies mentioned."
   };
 
-  // Split based on numbered headers or keywords like "Medical Condition(s)"
-  const parts = text.split(/(?:^|\n)(?=\s*\d[.)-]\s+|\*\*\s*Medical|Treatment|Home Remedies)/i);
+  const lower = text.toLowerCase();
 
-  for (const part of parts) {
-    const cleanPart = cleanMarkdown(part).trim();
+  const conditionMatch = text.match(/(?:1\.|^|\n)[^\n]*condition[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n2\.|2\.\s+|^2\.|^2\s+|$)/i);
+  const recommendationMatch = text.match(/(?:2\.|^|\n)[^\n]*treatment[^\n]*[\n\-–]*([\s\S]*?)(?=\n\d\.|\n3\.|3\.\s+|^3\.|^3\s+|$)/i);
+  const homeRemediesMatch = text.match(/(?:3\.|^|\n)[^\n]*home remedies[^\n]*[\n\-–]*([\s\S]*?)(?=$)/i);
 
-    if (/condition|diagnosis|cause|explanation/i.test(cleanPart)) {
-      sections.condition = limitWords(cleanPart, 300);
-    } else if (/treatment|recommendation|medication|advice/i.test(cleanPart)) {
-      sections.recommendation = limitWords(cleanPart, 300);
-    } else if (/home remedies|lifestyle|self-care|natural|relief/i.test(cleanPart)) {
-      sections.homeRemedies = limitWords(cleanPart, 300);
-    }
+  if (conditionMatch?.[1]) {
+    sections.condition = limitWords(cleanMarkdown(conditionMatch[1].trim()), 300);
+  }
+
+  if (recommendationMatch?.[1]) {
+    sections.recommendation = limitWords(cleanMarkdown(recommendationMatch[1].trim()), 300);
+  }
+
+  if (homeRemediesMatch?.[1]) {
+    sections.homeRemedies = limitWords(cleanMarkdown(homeRemediesMatch[1].trim()), 300);
   }
 
   return sections;
 }
+
 
 function cleanMarkdown(str) {
   return str.replace(/[*_`]+/g, '').trim();
