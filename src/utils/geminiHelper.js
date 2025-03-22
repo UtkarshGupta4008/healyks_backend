@@ -27,15 +27,16 @@ const analyzeSymptoms = async (symptoms, userProfile) => {
       }
     }
 
-    prompt += `
-Please behave like a medical doctor in your response. Your response should include:
+    prompt+=`Please behave like a medical doctor in your response.
 
-1. A detailed explanation of the most likely medical condition(s) based on the symptoms.
-2. Professional recommendations for treatment, both clinical and non-clinical.
-3. Safe and effective home remedies or lifestyle tips the patient can try, if applicable.
-4. Advice on when the patient should seek in-person medical attention.
+Your response must include the following 3 sections and follow this format:
 
-Use a clear, informative, and empathetic tone.`;
+1. **Medical Condition(s)** – A brief explanation (max 300 words) of the most likely cause(s) based on the symptoms.
+2. **Treatment Recommendations** – Professional advice (max 300 words) including both clinical and non-clinical options.
+3. **Home Remedies & Lifestyle Tips** – Safe remedies and tips (max 300 words) the user can try at home.
+
+Be concise, medically accurate, and empathetic in tone. Avoid repetition.`;
+
 
     const result = await model.generateContent(prompt);
     const response = result.response;
