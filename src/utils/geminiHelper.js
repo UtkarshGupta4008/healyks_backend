@@ -51,7 +51,7 @@ Be concise, medically accurate, and empathetic in tone. Avoid repetition.`;
 };
 
 /**
- * Parse Gemini response into structured sections with word limits
+ * Parse Gemini response into structured sections
  * @param {string} text - Full Gemini response
  * @returns {object}
  */
@@ -62,34 +62,26 @@ function parseSections(text) {
     homeRemedies: "No home remedies mentioned."
   };
 
-  // Match numbered sections like 1., 2., 3. with optional markdown or whitespace
-  const matches = text.match(/(?:1\.|2\.|3\.)[\s\S]*?(?=(?:\n\d\.|\Z))/g);
+  // Flexible split for section headers like "1.", "1 -", etc.
+  const parts = text.split(/(?:\*\*|\n|\r)?\s*\d[.)-]?\s*/).map(p => p.trim());
 
-  if (matches?.length) {
-    if (matches[0]) sections.condition = limitWords(cleanMarkdown(matches[0].replace(/^1\.\s*/i, '')), 300);
-    if (matches[1]) sections.recommendation = limitWords(cleanMarkdown(matches[1].replace(/^2\.\s*/i, '')), 300);
-    if (matches[2]) sections.homeRemedies = limitWords(cleanMarkdown(matches[2].replace(/^3\.\s*/i, '')), 300);
+  for (const part of parts) {
+    if (/condition|diagnosis|explanation|cause/i.test(part)) {
+      sections.condition = limitWords(cleanMarkdown(part), 300);
+    } else if (/recommendation|treatment|advice/i.test(part)) {
+      sections.recommendation = limitWords(cleanMarkdown(part), 300);
+    } else if (/home remedies|lifestyle|natural|self-care|relief/i.test(part)) {
+      sections.homeRemedies = limitWords(cleanMarkdown(part), 300);
+    }
   }
 
   return sections;
 }
 
-
-/**
- * Removes markdown symbols
- * @param {string} str
- * @returns {string}
- */
 function cleanMarkdown(str) {
   return str.replace(/[*_`]+/g, '').trim();
 }
 
-/**
- * Limits text to N words
- * @param {string} text
- * @param {number} wordLimit
- * @returns {string}
- */
 function limitWords(text, wordLimit) {
   const words = text.split(/\s+/);
   return words.length > wordLimit
