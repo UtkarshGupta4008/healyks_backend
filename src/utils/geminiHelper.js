@@ -6,29 +6,29 @@ const genAI = new GoogleGenerativeAI(process.env.Gemini_API_KEY);
 /**
  * Simple function to analyze symptoms using Gemini
  * @param {string} symptoms - User symptoms
+ * @param {object} userProfile - User profile containing age, gender, chronic diseases, etc.
  * @returns {Promise<object>} - Structured analysis of symptoms
  */
-const analyzeSymptoms = async (symptoms,userProfile) => {
+const analyzeSymptoms = async (symptoms, userProfile) => {
   try {
-    // Get the generative model
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-01-21" });
-    
-    // Construct a prompt that encourages concise responses
+
     let prompt = `As a healthcare assistant, analyze the following symptoms: "${symptoms}"`;
+
     if (userProfile) {
       prompt += `\nUser information: ${userProfile.age} years old, ${userProfile.gender}`;
 
-      if (userProfile.chronicDiseases && userProfile.chronicDiseases.length > 0) {
+      if (userProfile.chronicDiseases?.length) {
         prompt += `\nChronic conditions: ${userProfile.chronicDiseases.join(', ')}`;
       }
 
-      if (userProfile.allergies && userProfile.allergies.length > 0) {
+      if (userProfile.allergies?.length) {
         prompt += `\nAllergies: ${userProfile.allergies.join(', ')}`;
       }
     }
 
-    
-    prompt+=`Please behave like a medical doctor in your response. Your response should include:
+    prompt += `
+Please behave like a medical doctor in your response. Your response should include:
 
 1. A detailed explanation of the most likely medical condition(s) based on the symptoms.
 2. Professional recommendations for treatment, both clinical and non-clinical.
@@ -36,54 +36,58 @@ const analyzeSymptoms = async (symptoms,userProfile) => {
 4. Advice on when the patient should seek in-person medical attention.
 
 Use a clear, informative, and empathetic tone.`;
-    
-    // Generate content
+
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
-    
-    // Parse the response to extract structured information
-    return {
-      condition: extractCondition(text),
-      recommendation: extractRecommendation(text),
-      homeRemedies: extractHomeRemedies(text),
-    };
+
+    // Debugging log (optional)
+    // console.log("AI Response:\n", text);
+
+    // Extract all three sections from Gemini response
+    return parseSections(text);
+
   } catch (error) {
     console.error('Error analyzing symptoms:', error);
     throw new Error('Failed to analyze symptoms');
   }
 };
-function extractCondition(text) {
-  const match = text.match(/(?:\*\*1\.\s*Possible Medical Conditions.*?\*\*|Possible condition(?:s)?|Likely diagnosis|Medical explanation)[:\s]*([\s\S]+?)(?:\*\*2\.|Recommended|Doctor|Advice|$)/i);
-  if (match && match[1]) {
-    return match[1].trim();
+
+/**
+ * Parses Gemini response into structured sections.
+ * @param {string} text - Full AI response
+ * @returns {object} - Extracted sections
+ */
+function parseSections(text) {
+  const sections = {
+    condition: "Condition details not clearly identified.",
+    recommendation: "No specific recommendations found.",
+    homeRemedies: "No home remedies mentioned."
+  };
+
+  const parts = text.split(/\*\*\s*\d\.\s*/).map(p => p.trim());
+
+  for (const part of parts) {
+    if (/condition|diagnosis|explanation/i.test(part)) {
+      sections.condition = cleanMarkdown(part);
+    } else if (/recommendation|treatment|advice/i.test(part)) {
+      sections.recommendation = cleanMarkdown(part);
+    } else if (/home remedies|lifestyle|natural/i.test(part)) {
+      sections.homeRemedies = cleanMarkdown(part);
+    }
   }
 
-  return "Condition details not clearly identified.";
+  return sections;
 }
 
-
-
-function extractRecommendation(text) {
-  const match = text.match(/(?:\*\*2\.\s*Professional Recommendations.*?\*\*|Recommended actions|Doctor's advice|Treatment recommendation|Clinical advice)[:\s]*([\s\S]+?)(?:\*\*3\.|Home remedies|Lifestyle|Advice|$)/i);
-  if (match && match[1]) {
-    return match[1].trim();
-  }
-
-  return "No specific recommendations found.";
+/**
+ * Cleans common markdown formatting for display
+ * @param {string} str - Markdown text
+ * @returns {string}
+ */
+function cleanMarkdown(str) {
+  return str.replace(/[*_`]+/g, '').trim();
 }
-
-
-function extractHomeRemedies(text) {
-  const match = text.match(/(?:\*\*3\.\s*.*?Home Remedies.*?\*\*|Home remedies|Lifestyle tips|Natural treatments)[:\s]*([\s\S]+?)(?:\*\*4\.|Advice|Seek|$)/i);
-  if (match && match[1]) {
-    return match[1].trim();
-  }
-
-  return "No home remedies mentioned.";
-}
-
-
 
 module.exports = {
   analyzeSymptoms,
