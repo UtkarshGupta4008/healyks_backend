@@ -62,16 +62,18 @@ function parseSections(text) {
     homeRemedies: "No home remedies mentioned."
   };
 
-  const section1 = text.match(/(?:1\.|1\)|①)[^\n]*?\n([\s\S]+?)(?=(?:\n2\.|2\)|②|\n2\s|$))/i);
-  const section2 = text.match(/(?:2\.|2\)|②)[^\n]*?\n([\s\S]+?)(?=(?:\n3\.|3\)|③|\n3\s|$))/i);
-  const section3 = text.match(/(?:3\.|3\)|③)[^\n]*?\n([\s\S]+?)(?=(?:\n4\.|When to see a doctor|Seek medical attention|$))/i);
+  // Match numbered sections like 1., 2., 3. with optional markdown or whitespace
+  const matches = text.match(/(?:1\.|2\.|3\.)[\s\S]*?(?=(?:\n\d\.|\Z))/g);
 
-  if (section1) sections.condition = limitWords(cleanMarkdown(section1[1]), 300);
-  if (section2) sections.recommendation = limitWords(cleanMarkdown(section2[1]), 300);
-  if (section3) sections.homeRemedies = limitWords(cleanMarkdown(section3[1]), 300);
+  if (matches?.length) {
+    if (matches[0]) sections.condition = limitWords(cleanMarkdown(matches[0].replace(/^1\.\s*/i, '')), 300);
+    if (matches[1]) sections.recommendation = limitWords(cleanMarkdown(matches[1].replace(/^2\.\s*/i, '')), 300);
+    if (matches[2]) sections.homeRemedies = limitWords(cleanMarkdown(matches[2].replace(/^3\.\s*/i, '')), 300);
+  }
 
   return sections;
 }
+
 
 /**
  * Removes markdown symbols
