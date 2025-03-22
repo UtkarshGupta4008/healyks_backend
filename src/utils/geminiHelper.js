@@ -60,19 +60,28 @@ Please respond as a medical professional would, with appropriate medical termino
  */
 function extractCondition(text) {
   // First try to match the explicit format
-  const explicitMatch = text.match(/Possible condition(?:\(s\))?:?\s*(.*?)(?:\n|$)/i);
-  if (explicitMatch && explicitMatch[1].trim()) {
-    return explicitMatch[1].trim();
+  const pattern = /Possible condition(?:\(s\))?:?\s*([\s\S]*?)(?=\n\s*Recommended actions:|$)/i;
+  const match = text.match(pattern);
+  
+  if (match && match[1] && match[1].trim()) {
+    return match[1].trim();
   }
   
-  // If no explicit match, try to find the first paragraph that might contain condition info
-  const paragraphs = text.split('\n').filter(p => p.trim());
+  // Second attempt with a more lenient pattern
+  const lenientPattern = /(?:Possible|Potential|Likely) condition[^:]*:\s*([\s\S]*?)(?=\n\s*Recommended|Home|$)/i;
+  const lenientMatch = text.match(lenientPattern);
+  
+  if (lenientMatch && lenientMatch[1] && lenientMatch[1].trim()) {
+    return lenientMatch[1].trim();
+  }
+  
+  // If still no match, extract the first paragraph that might be about conditions
+  const paragraphs = text.split('\n\n').filter(p => p.trim());
   for (const paragraph of paragraphs) {
     if (paragraph.toLowerCase().includes('condition') || 
         paragraph.toLowerCase().includes('diagnosis') || 
-        paragraph.toLowerCase().includes('may be') || 
-        paragraph.toLowerCase().includes('could be') ||
-        paragraph.toLowerCase().includes('likely')) {
+        paragraph.toLowerCase().includes('suffering from') || 
+        paragraph.toLowerCase().includes('symptoms suggest')) {
       return paragraph.trim();
     }
   }
@@ -87,19 +96,28 @@ function extractCondition(text) {
  * @returns {string} - Extracted recommendation information
  */
 function extractRecommendation(text) {
-  // First try to match the explicit format
-  const explicitMatch = text.match(/Recommend(?:ed|ation)(?:\s+actions)?:?\s*(.*?)(?:\n|$)/i);
-  if (explicitMatch && explicitMatch[1].trim()) {
-    return explicitMatch[1].trim();
+  const pattern = /Recommended actions:?\s*([\s\S]*?)(?=\n\s*Home remedies:|$)/i;
+  const match = text.match(pattern);
+  
+  if (match && match[1] && match[1].trim()) {
+    return match[1].trim();
   }
   
-  // Try to find any paragraph that talks about recommendations
-  const paragraphs = text.split('\n').filter(p => p.trim());
+  // Second attempt with a more lenient pattern
+  const lenientPattern = /(?:Recommend|Advice|What to do)[^:]*:\s*([\s\S]*?)(?=\n\s*Home|$)/i;
+  const lenientMatch = text.match(lenientPattern);
+  
+  if (lenientMatch && lenientMatch[1] && lenientMatch[1].trim()) {
+    return lenientMatch[1].trim();
+  }
+  
+  // If still no match, look for paragraphs that seem like recommendations
+  const paragraphs = text.split('\n\n').filter(p => p.trim());
   for (const paragraph of paragraphs) {
     if (paragraph.toLowerCase().includes('recommend') || 
-        paragraph.toLowerCase().includes('should') || 
-        paragraph.toLowerCase().includes('advised') ||
-        paragraph.toLowerCase().includes('consider')) {
+        paragraph.toLowerCase().includes('should see') || 
+        paragraph.toLowerCase().includes('advised to') ||
+        paragraph.toLowerCase().includes('seek medical')) {
       return paragraph.trim();
     }
   }
@@ -108,10 +126,31 @@ function extractRecommendation(text) {
   return "Consult a healthcare professional";
 }
 function extractHomeRemedies(text) {
-  const match = text.match(/Home remedies:?\s*([\s\S]*?)(?:\n\n|$)/i);
-  if (match && match[1].trim()) {
+  const pattern = /Home remedies:?\s*([\s\S]*?)(?=\n\n\s*|$)/i;
+  const match = text.match(pattern);
+  
+  if (match && match[1] && match[1].trim()) {
     return match[1].trim();
   }
+  
+  // Second attempt with a more lenient pattern
+  const lenientPattern = /(?:Home|Natural|Self)[^:]*(?:remedies|care|treatment)[^:]*:?\s*([\s\S]*?)(?=\n\n|$)/i;
+  const lenientMatch = text.match(lenientPattern);
+  
+  if (lenientMatch && lenientMatch[1] && lenientMatch[1].trim()) {
+    return lenientMatch[1].trim();
+  }
+  
+  // If still no match, look for paragraphs that seem like home remedies
+  const paragraphs = text.split('\n\n').filter(p => p.trim());
+  for (const paragraph of paragraphs) {
+    if (paragraph.toLowerCase().includes('home') && 
+       (paragraph.toLowerCase().includes('remedy') || paragraph.toLowerCase().includes('treatment'))) {
+      return paragraph.trim();
+    }
+  }
+  
+  // Fallback
   return "No specific home remedies provided";
 }
 
