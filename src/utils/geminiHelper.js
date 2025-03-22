@@ -28,12 +28,13 @@ const analyzeSymptoms = async (symptoms,userProfile) => {
     }
 
     
-    prompt+=`\nPlease provide very concise responses in the following format:
+    prompt += `\nPlease provide a thorough analysis in the following format:
     
-    Possible condition(s): [brief, 1-2 sentence description of the most likely condition]
-    Recommended actions: [brief, 1-2 sentence practical advice]
-    
-    Keep each response section to no more than 50 words.`;
+Possible condition(s): [Detailed explanation of the most likely medical conditions based on the symptoms]
+Recommended actions: [Professional medical advice on next steps]
+Home remedies: [Safe home treatments that might provide relief]
+
+Please respond as a medical professional would, with appropriate medical terminology while still being understandable to patients.`;
     
     // Generate content
     const result = await model.generateContent(prompt);
@@ -44,6 +45,7 @@ const analyzeSymptoms = async (symptoms,userProfile) => {
     return {
       condition: extractCondition(text),
       recommendation: extractRecommendation(text),
+      homeRemedies: extractHomeRemedies(text)
     };
   } catch (error) {
     console.error('Error analyzing symptoms:', error);
@@ -67,6 +69,7 @@ function extractCondition(text) {
   const paragraphs = text.split('\n').filter(p => p.trim());
   for (const paragraph of paragraphs) {
     if (paragraph.toLowerCase().includes('condition') || 
+        paragraph.toLowerCase().includes('diagnosis') || 
         paragraph.toLowerCase().includes('may be') || 
         paragraph.toLowerCase().includes('could be') ||
         paragraph.toLowerCase().includes('likely')) {
@@ -103,6 +106,13 @@ function extractRecommendation(text) {
   
   // Fallback
   return "Consult a healthcare professional";
+}
+function extractHomeRemedies(text) {
+  const match = text.match(/Home remedies:?\s*([\s\S]*?)(?:\n\n|$)/i);
+  if (match && match[1].trim()) {
+    return match[1].trim();
+  }
+  return "No specific home remedies provided";
 }
 
 module.exports = {
