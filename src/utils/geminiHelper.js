@@ -33,7 +33,7 @@ const analyzeSymptoms = async (symptoms,userProfile) => {
     Possible condition(s): [brief, 1-2 sentence description of the most likely condition]
     Recommended actions: [brief, 1-2 sentence practical advice]
     
-    Keep each response section to no more than 50 words.`;
+    Keep each response section to no more than 500 words.`;
     
     // Generate content
     const result = await model.generateContent(prompt);
